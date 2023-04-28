@@ -1,14 +1,49 @@
 from itertools import accumulate
+import math
+import random 
+import time
+
+class Node:
+    def __init__(self, value = None):
+        self.links = []
+        self.value = value
+    
+    def getValue(self):
+        sum = 0 
+        if self.value != None:
+            sum = self.value
+        else:      
+            for link in self.links:
+                sum += link.getValue()
+        return sum
+        
+
+class Link:
+    def __init__(self, n1, n2):
+        self.weight = random.uniform(-1, 1)
+        self.inputNode = n1
+        
+        n2.links.append(self)
+
+    def getValue(self):
+        return self.weight * self.inputNode.getValue()
 
 symbolVecs = {'O': (1,0), 'X': {0, 1}}
-#symbolChars = dict ((value, key) for key, value in symbolVecs.items())
+symbolChars = dict ((key, value) for key, value in symbolVecs.items())
 
 inputDim = 9
 hiddenDim = 39
 # hiddenDim = 10
 outputDim = 2
 
-maxCost = 0.01
+side = 3
+inNodes = [[Node() for column in range (side)] for row in range(side)]
+outNodes = [Node() for i in range(2)]
+
+nrOfRows = 3
+nrOfColumns = 3
+
+costThreshold = 0.01
 
 trainingSet = (
     ((
@@ -78,75 +113,115 @@ testSet = (
 
 outputDict = {'O': (1, 0), 'X': (0, 1)}
 
-#costfunc heeft jarno
+def softMax(inVec):
+    expVec = [math.exp (inScal) for inScal in inVec]
+    aSum = sum (expVec)
+    return [expScal / aSum for expScal in expVec]
 
 def costFunc(outVec, modelVec): #gemiddelde berkenen ofzo, gemiddelde veranderen totdat costor laag is.
-    deltaX = modelVec[0] - outVec[0]
-    deltaY = modelVec[1] - outVec[1]
+    return sum([(lambda x: x*x) (zipped[0] - zipped[1]) for zipped in zip(outVec, modelVec)])
+    #sum = deltaX * deltaX + deltaY * deltaY
 
-    sum = deltaX * deltaX + deltaY * deltaY
-    return sum
-
-class neural:
-    def __init__(self):
-        pass
-    def function(self):
-        print("activate func")
-
-class Node:
-    def __init__(self):
-        self.links = []
-        self.bias = None
-    
-    def getValue(self):
-        if self.links:
-            sum = 0
-            for link in links:
-                sum += link.getValue()
-            return sum
-        else:
-            return 0 #storedValue
-
-class Link:
-    def __init__(self, n1, n2):
-        self.weight = 1
-        self.inputNode = n1
-        
-        n2.links.append(self)
-
-    def getValue(self):
-        return self.weight * self.inputNode.bias
 
 def computeAverageCost():
 
-    accumulatedCost - 0
+    accumulatedCost = 0
 
     for trainingsItem in trainingSet:
 
         for iRow in range(nrOfRows):
             for iColumn in range(nrOfColumns):
-                inNodes [iRow][iColumn].value = traininsItem[0][iRow][iColumn]
+                inNodes [iRow][iColumn].value = trainingsItem[0][iRow][iColumn]
 
-    accumulatedCost += costFunc(softmax([outNode.getValue() for outNode in outNodes]), symbolVecs[trainingsItem[1]])
+    accumulatedCost += costFunc(softMax([outNode.getValue() for outNode in outNodes]), symbolVecs[trainingsItem[1]])
+    #print(accumulatedCost)
+    return accumulatedCost / len(trainingSet)
 
-    return accumulatedCost / len (trainingSet)
+def main():
 
-side = 3
-inNodes = [[Node() for column in range (side)] for row in range(side)]
+    #compute average cost
+    #iterate until the averagecost is as small as possible using a learning rate
+    #change the weights of the links
 
-print(inNodes[0][2])
-# inNodes =   (   (Node(),Node(), Node()),
-#                 (Node(),Node(), Node()),
-#                 (Node(),Node(), Node())
-#             )
+    links = []
+    for inRow in inNodes:
+        for inNode in inRow:
+            for outNode in outNodes:
+                links.append(Link(inNode, outNode))
 
-outNodes = [Node() for i in range(2)]
+    averageCost = computeAverageCost()
+    print(averageCost)
 
-links = []
-for inRow in inNodes:
-    for inNode in inRow:
-        for outNode in outNodes:
-            links.append(Link(inNode, outNode))
+    # for node in inNodes:
+    #     for n in node:
+    #         print(n.value)
 
-print(outNodes[0].getValue())
-print(outNodes[1].getValue())
+    while True:
+        bestCost = 100
+
+        if averageCost < costThreshold:
+            break
+
+        # Change the weights of the links
+        if averageCost < bestCost:
+            bestCost = averageCost
+            best_link = None
+
+        for trainingsItem in trainingSet:
+            # Set the input node values to the current training item
+
+            # Compute the output values
+            outValues = softMax([outNode.getValue() for outNode in outNodes])
+
+            # Compute the target output values
+            targetValues = outputDict[trainingsItem[1]]
+
+            # Compute the error
+            errors = [(targetValues[i] - outValues[i]) for i in range(outputDim)]
+
+            learning_rate = 0.01
+            # Backpropagation
+            for i in range(outputDim):
+                for j in range(3):
+                    inNodes[i][j].value += errors[i]
+                for link in outNodes[i].links:
+                    #link.weight += errors[i] * link.inputNode.getValue()
+                    link.weight += learning_rate
+                    newCost = computeAverageCost()
+                    if newCost < bestCost:
+                        bestCost = newCost
+                        best_link = link
+                    link.weight -= learning_rate
+            if best_link is not None:
+                best_link.weight += learning_rate
+
+            time.sleep(0.1)
+
+        # Print the final average cost
+        print(f"Final average cost: {computeAverageCost()}")
+
+
+
+
+
+
+    # while averageCost > costThreshold:
+    #     bestCost = 0
+    #     bestLink = None
+
+    #     tempLinks = [outNode.links for outNode in outNodes]
+
+    #     if averageCost < bestCost:
+    #         bestCost = averageCost
+    #     else:
+    #         for i in range(len(tempLinks)):
+    #             outNodes[i].links = tempLinks[i]
+
+    
+
+    # print(inNodes[0][2])
+
+    # print(outNodes[0].getValue())
+    # print(outNodes[1].getValue())
+
+main()    
