@@ -43,7 +43,7 @@ outNodes = [Node() for i in range(2)]
 nrOfRows = 3
 nrOfColumns = 3
 
-costThreshold = 0.01
+costThreshold = 0.09
 
 trainingSet = (
     ((
@@ -160,6 +160,7 @@ def main():
         bestCost = 100
 
         if averageCost < costThreshold:
+            print("======================================================")
             break
 
         # Change the weights of the links
@@ -198,9 +199,22 @@ def main():
             time.sleep(0.1)
 
         # Print the final average cost
-        print(f"Final average cost: {computeAverageCost()}")
+        averageCost = computeAverageCost()
+        print(f"Final average cost: {averageCost}")
+
+    fCost = 0
+    nCost = 0
+    for testItem in testSet:
+
+        fCost = costFunc(softMax([outNode.getValue() for outNode in outNodes]), symbolVecs[testItem[1]])
+        #nCost = costFunc(softMax([outNode.getValue() for outNode in outNodes]), symbolVecs[testItem[2]])
+
+        print(fCost)
 
 
+    #print(finalCost / len(testSet))
+
+    
 
 
 
