@@ -20,7 +20,7 @@ class Node:
 
 class Link:
     def __init__(self, n1, n2):
-        self.weight = random.uniform(-1, 1)
+        self.weight = random.uniform(-5, 5)
         self.inputNode = n1
         
         n2.links.append(self)
@@ -32,7 +32,6 @@ symbolVecs = {'O': (1,0), 'X': {0, 1}}
 symbolChars = dict ((key, value) for key, value in symbolVecs.items())
 
 inputDim = 9
-hiddenDim = 39
 # hiddenDim = 10
 outputDim = 2
 
@@ -43,7 +42,7 @@ outNodes = [Node() for i in range(2)]
 nrOfRows = 3
 nrOfColumns = 3
 
-costThreshold = 0.09
+costThreshold = 0.01
 
 trainingSet = (
     ((
@@ -118,7 +117,7 @@ def softMax(inVec):
     aSum = sum (expVec)
     return [expScal / aSum for expScal in expVec]
 
-def costFunc(outVec, modelVec): #gemiddelde berkenen ofzo, gemiddelde veranderen totdat costor laag is.
+def costFunc(outVec, modelVec): #gemiddelde berekenen, gemiddelde veranderen totdat costor laag is.
     return sum([(lambda x: x*x) (zipped[0] - zipped[1]) for zipped in zip(outVec, modelVec)])
     #sum = deltaX * deltaX + deltaY * deltaY
 
@@ -137,6 +136,31 @@ def computeAverageCost():
     #print(accumulatedCost)
     return accumulatedCost / len(trainingSet)
 
+def testNetwork():
+
+    correctPredictions = 0
+
+    for testItem in testSet:
+        for iRow in range(nrOfRows):
+            for iColumn in range(nrOfColumns):
+                inNodes [iRow][iColumn].value = testItem[0][iRow][iColumn]
+
+        outputVec = softMax([outNode.getValue() for outNode in outNodes])
+        predictedSymbol = 'X' if outputVec[0] < outputVec[1] else 'O'
+        
+        print("actual symbol: " + testItem[1])
+        print("predicted symbol: " + predictedSymbol)
+        print("O: " + str(outputVec[0]) + "  X: " + str(outputVec[1]))
+
+        if predictedSymbol == testItem[1]:
+            correctPredictions += 1
+
+
+
+    print(f"Number of correct predictions: {correctPredictions}")
+    print(f"Number of total predictions: {len(testSet)}")
+    print(f"Accuracy: {correctPredictions / len(testSet)}")
+
 def main():
 
     #compute average cost
@@ -152,12 +176,8 @@ def main():
     averageCost = computeAverageCost()
     print(averageCost)
 
-    # for node in inNodes:
-    #     for n in node:
-    #         print(n.value)
-
     while True:
-        bestCost = 100
+        bestCost = 10
 
         if averageCost < costThreshold:
             print("======================================================")
@@ -180,7 +200,7 @@ def main():
             # Compute the error
             errors = [(targetValues[i] - outValues[i]) for i in range(outputDim)]
 
-            learning_rate = 0.01
+            learning_rate = 0.1
             # Backpropagation
             for i in range(outputDim):
                 for j in range(3):
@@ -201,41 +221,8 @@ def main():
         # Print the final average cost
         averageCost = computeAverageCost()
         print(f"Final average cost: {averageCost}")
-
-    fCost = 0
-    nCost = 0
-    for testItem in testSet:
-
-        fCost = costFunc(softMax([outNode.getValue() for outNode in outNodes]), symbolVecs[testItem[1]])
-        #nCost = costFunc(softMax([outNode.getValue() for outNode in outNodes]), symbolVecs[testItem[2]])
-
-        print(fCost)
-
-
-    #print(finalCost / len(testSet))
-
     
+    testNetwork()
 
-
-
-
-    # while averageCost > costThreshold:
-    #     bestCost = 0
-    #     bestLink = None
-
-    #     tempLinks = [outNode.links for outNode in outNodes]
-
-    #     if averageCost < bestCost:
-    #         bestCost = averageCost
-    #     else:
-    #         for i in range(len(tempLinks)):
-    #             outNodes[i].links = tempLinks[i]
-
-    
-
-    # print(inNodes[0][2])
-
-    # print(outNodes[0].getValue())
-    # print(outNodes[1].getValue())
 
 main()    
