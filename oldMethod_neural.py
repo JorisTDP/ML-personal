@@ -38,7 +38,7 @@ inputDim = 9
 # hiddenDim = 10
 outputDim = 2
 
-learning_rate = 0.01
+learning_rate = 0.1
 
 side = 3
 inNodes = [[Node() for column in range (side)] for row in range(side)]
@@ -47,7 +47,7 @@ outNodes = [Node() for i in range(2)]
 nrOfRows = 3
 nrOfColumns = 3
 
-costThreshold = 0.001
+costThreshold = 0.1
 
 trainingSet = (
     ((
@@ -178,28 +178,20 @@ def main():
             for outNode in outNodes:
                 links.append(Link(inNode, outNode))
 
-    for link in links:
-        print(link.weight)
-
     averageCost = computeAverageCost()
     print(averageCost)
-    counter = 0
 
     while True:
         bestCost = 10
-        bestCostIncrease = 0
-        counter+=1
 
         if averageCost < costThreshold:
-            if(counter > 5000):
-                break
             print("======================================================")
-            #break
+            break
 
         # Change the weights of the links
         if averageCost < bestCost:
             bestCost = averageCost
-            bestLink = None
+            best_link = None
 
         for trainingsItem in trainingSet:
             # Set the input node values to the current training item
@@ -218,25 +210,24 @@ def main():
                 for j in range(3):
                     inNodes[i][j].value += errors[i]
                 for link in outNodes[i].links: 
-                    link.adaptWeight(averageCost)
+                    #link.weight += errors[i] * link.inputNode.getValue()
+                    link.weight += learning_rate
+                    newCost = computeAverageCost()
+                    if abs(newCost) < abs(bestCost):
+                        bestCost = newCost
+                        best_link = link
+                    link.weight -= learning_rate
+            if best_link is not None:
+                best_link.weight += learning_rate
+                #best_link.adaptWeight(-averageCost if bestCost > 0 else averageCost)
 
-                    newAverage = computeAverageCost()
-                    costIncrease = newAverage - averageCost
-
-                    if abs (costIncrease) > abs (bestCostIncrease):
-                        bestCostIncrease = costIncrease
-                        bestLink = link
-
-                    link.adaptWeight(-averageCost)
-
-                bestLink.adaptWeight(-averageCost if bestCostIncrease > 0 else averageCost)
-                averageCost = computeAverageCost()
-
+            #time.sleep(0.01)
+        # Print the final average cost
+        averageCost = computeAverageCost()
+    
         #print(f"Final average cost: {averageCost}")
         print("Final average cost: " + str(averageCost) + " " + '*' * int (averageCost * 120))
     
     testNetwork()
-
-#for link in links:
 
 main()    
