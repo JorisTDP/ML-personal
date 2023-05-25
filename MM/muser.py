@@ -1,6 +1,6 @@
 import glob as gl
 import os
-import tomita.legacy.pysynth_s as ps
+import tomita.legacy.pysynth as ps
 
 class Muser:
     def generate (self, song):
