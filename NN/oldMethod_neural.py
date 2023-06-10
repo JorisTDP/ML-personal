@@ -47,7 +47,7 @@ outNodes = [Node() for i in range(2)]
 nrOfRows = 3
 nrOfColumns = 3
 
-costThreshold = 0.1
+costThreshold = 0.01
 
 trainingSet = (
     ((
