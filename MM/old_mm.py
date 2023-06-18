@@ -3,7 +3,7 @@ import time
 
 import random
 
-class Bach:
+class old_mm:
     basenotes = ["a", "a#", "b", "c", "c#", "d", "d#", "e", "f", "f#", "g", "g#"]
 
     building_blocks = [
@@ -67,20 +67,9 @@ class Bach:
             print(notes)
             muser.generate(notes)
 
-b = Bach()
+b = old_mm()
 notes = b.gen()
 muser = ms.Muser ()
 muser.generate (notes)
 
 b.main()
-
-
-# print("Hello user, take a listen to the newly generated audio file...")
-# time.sleep(1)
-# input = int(input("What sequence do you want to continue in next generation? (1-4)"))
-# print(notes[0])
-# print(input)
-# finalnotes = notes[0][( (input - 1) * 4):(input*4)]
-# print(finalnotes)
-#notes[0][4:8] = finalcomp
-#print(notes[0]) 

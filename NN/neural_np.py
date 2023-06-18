@@ -33,8 +33,8 @@ outputDim = 2
 learning_rate = 0.01
 
 side = 3
-inNodes = np.array([[Node() for _ in range(side)] for _ in range(side)])
-outNodes = np.array([Node() for _ in range(outputDim)])
+inNodes = np.array([[Node() for i in range(side)] for i in range(side)])
+outNodes = np.array([Node() for i in range(outputDim)])
 
 nrOfRows = 3
 nrOfColumns = 3
@@ -66,7 +66,7 @@ def softMax(inVec): # calculates the softmax activation of an input vector
     return expVec / np.sum(expVec)
 
 def sigmoid(x):
-return 1 / (1 + np.exp(-x))
+    return 1 / (1 + np.exp(-x))
 
 def costFunc(outVec, modelVec): # calculates the mean squared error between outputvec and modelvec
     return np.sum((outVec - modelVec) ** 2)
@@ -107,7 +107,7 @@ def testNetwork(): # tests the trained network
 
 def main():
     links = []
-    for inRow in inNodes:
+    for inRow in inNodes: #Connect all nodes to eachother in array called links
         for inNode in inRow:
             for outNode in outNodes:
                 links.append(Link(inNode, outNode))
@@ -129,7 +129,7 @@ def main():
                 break
             print("======================================================")
 
-        if averageCost < bestCost:
+        if averageCost < bestCost: #update bestcost
             bestCost = averageCost
             bestLink = None
 
@@ -157,7 +157,11 @@ def main():
 
                     link.adaptWeight(-averageCost)
 
-                bestLink.adaptWeight(-averageCost if bestCostIncrease > 0 else averageCost)
+                if bestCostIncrease > 0:
+                    bestLink.adaptWeight(-averageCost)
+                else:
+                    bestLink.adaptWeight(averageCost)
+
                 averageCost = computeAverageCost()
 
         print("Final average cost: " + str(averageCost) + " " + '*' * int(averageCost * 120))
